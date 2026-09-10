@@ -1,3 +1,8 @@
+const WHATSAPP_NUMBER = '5521992985489';
+document.querySelectorAll('[data-service]').forEach(link => {
+  const message = `Olá, tudo bem? Vi o serviço ${link.dataset.service} no site e gostaria de mais informações, incluindo valores e horários disponíveis.`;
+  link.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+});
 const taxi = document.getElementById('taxi');
 const tosa = document.getElementById('tosa');
 const summary = document.getElementById('plan-summary');
