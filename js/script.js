@@ -6,11 +6,37 @@ document.querySelectorAll('[data-service]').forEach(link => {
 const taxi = document.getElementById('taxi');
 const tosa = document.getElementById('tosa');
 const summary = document.getElementById('plan-summary');
-function updatePlan() {
-  summary.textContent = 'Seu Clubinho: 4 banhos mensais' + (taxi.checked ? ' + táxi dog' : ', levando e buscando seu pet') + (tosa.checked ? ' + tosa' : '') + '. ' + ((taxi.checked || tosa.checked) ? 'Adicionais cobrados à parte.' : '');
+const planWhatsapp = document.getElementById('plan-whatsapp');
+const planExtras = [
+  { id: 'extra-unhas', label: 'corte de unhas' },
+  { id: 'extra-ouvido', label: 'limpeza de ouvido' },
+  { id: 'extra-hidratacao', label: 'hidratação' },
+  { id: 'extra-desembaraco', label: 'desembaraço' },
+  { id: 'extra-vacina', label: 'vacina V10' },
+].map(extra => ({ ...extra, input: document.getElementById(extra.id) }));
+function checkedExtraLabels() {
+  return planExtras.filter(extra => extra.input.checked).map(extra => extra.label);
 }
-taxi.addEventListener('change', updatePlan);
-tosa.addEventListener('change', updatePlan);
+function updatePlan() {
+  const extras = checkedExtraLabels();
+  summary.textContent = 'Seu Clubinho: 4 banhos mensais' + (taxi.checked ? ' + táxi dog' : ', levando e buscando seu pet') + (tosa.checked ? ' + tosa' : '') + (extras.length ? ' + ' + extras.join(', ') : '') + '. ' + ((taxi.checked || tosa.checked || extras.length) ? 'Adicionais cobrados à parte.' : '');
+}
+function updatePlanWhatsappLink() {
+  let message = `Olá, tudo bem? Gostaria de consultar o Clubinho do Pet (4 banhos por mês), ${taxi.checked ? 'com' : 'sem'} táxi dog e ${tosa.checked ? 'com' : 'sem'} tosa.`;
+  const extras = checkedExtraLabels();
+  if (extras.length) {
+    message += ` Também gostaria de consultar: ${extras.join(', ')}.`;
+  }
+  message += ' Pode me passar os valores e a disponibilidade?';
+  planWhatsapp.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+}
+function updatePlanCard() {
+  updatePlan();
+  updatePlanWhatsappLink();
+}
+const planInputs = [taxi, tosa, ...planExtras.map(extra => extra.input)];
+planInputs.forEach(input => input.addEventListener('change', updatePlanCard));
+updatePlanWhatsappLink();
 if (window.gsap && window.ScrollTrigger) {
   gsap.registerPlugin(ScrollTrigger);
   gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
@@ -23,7 +49,7 @@ if (window.gsap && window.ScrollTrigger) {
     const animateChoice = event => {
       gsap.fromTo(event.currentTarget.closest('label'),{scale:.985},{scale:1,duration:.35,ease:'back.out(1.5)',clearProps:'transform'});
     };
-    [taxi,tosa].forEach(input => input.addEventListener('change', animateChoice));
-    return () => [taxi,tosa].forEach(input => input.removeEventListener('change', animateChoice));
+    planInputs.forEach(input => input.addEventListener('change', animateChoice));
+    return () => planInputs.forEach(input => input.removeEventListener('change', animateChoice));
   });
 }
