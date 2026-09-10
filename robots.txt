@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://clubinho-ambiente-animal.vercel.app/sitemap.xml
