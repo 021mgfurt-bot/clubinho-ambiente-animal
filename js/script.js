@@ -46,6 +46,7 @@ if (window.gsap && window.ScrollTrigger) {
       gsap.from(element, {scrollTrigger:{trigger:element,start:'top 92%',once:true}, y:30, opacity:0,duration:.7,ease:'power2.out',clearProps:'all'});
     });
     gsap.to('.photo-tag', {y:-12,rotation:-2,scrollTrigger:{trigger:'.hero',start:'top top',end:'bottom top',scrub:1}});
+    gsap.from('.whatsapp-float', {scale:0, opacity:0, duration:.6, delay:.9, ease:'back.out(1.7)', clearProps:'transform'});
     const animateChoice = event => {
       gsap.fromTo(event.currentTarget.closest('label'),{scale:.985},{scale:1,duration:.35,ease:'back.out(1.5)',clearProps:'transform'});
     };
