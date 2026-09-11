@@ -1,4 +1,11 @@
 const WHATSAPP_NUMBER = '5521992985489';
+const historyLogo = document.querySelector('.history-logo');
+if (historyLogo && historyLogo.tagName === 'VIDEO') {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    historyLogo.removeAttribute('autoplay');
+    historyLogo.pause();
+  }
+}
 document.querySelectorAll('[data-service]').forEach(link => {
   const message = `Olá, tudo bem? Vi o serviço ${link.dataset.service} no site e gostaria de mais informações, incluindo valores e horários disponíveis.`;
   link.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
