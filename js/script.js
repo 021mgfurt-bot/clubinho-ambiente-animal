@@ -46,6 +46,7 @@ planInputs.forEach(input => input.addEventListener('change', updatePlanCard));
 updatePlanWhatsappLink();
 if (window.gsap && window.ScrollTrigger) {
   gsap.registerPlugin(ScrollTrigger);
+  ScrollTrigger.config({ ignoreMobileResize: true });
   gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
     gsap.from('.hero-copy > *', {y:25, opacity:0, duration:.85, stagger:.12, ease:'power3.out', clearProps:'all'});
     gsap.from('.hero-visual', {y:22, opacity:0, duration:1, delay:.15, ease:'power3.out', clearProps:'transform,opacity'});
