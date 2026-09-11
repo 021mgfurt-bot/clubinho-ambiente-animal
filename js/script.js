@@ -42,7 +42,7 @@ if (window.gsap && window.ScrollTrigger) {
   gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
     gsap.from('.hero-copy > *', {y:25, opacity:0, duration:.85, stagger:.12, ease:'power3.out', clearProps:'all'});
     gsap.from('.hero-visual', {y:22, opacity:0, duration:1, delay:.15, ease:'power3.out', clearProps:'transform,opacity'});
-    gsap.utils.toArray('.section-heading, .service-grid article, .club-copy, .plan, .about > div, .contact').forEach(element => {
+    gsap.utils.toArray('.section-heading, .service-grid article, .club-copy, .plan, .about > div, .review-card, .contact').forEach(element => {
       gsap.from(element, {scrollTrigger:{trigger:element,start:'top 92%',once:true}, y:30, opacity:0,duration:.7,ease:'power2.out',clearProps:'all'});
     });
     gsap.to('.photo-tag', {y:-12,rotation:-2,scrollTrigger:{trigger:'.hero',start:'top top',end:'bottom top',scrub:1}});
