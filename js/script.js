@@ -47,13 +47,10 @@ updatePlanWhatsappLink();
 if (window.gsap && window.ScrollTrigger) {
   gsap.registerPlugin(ScrollTrigger);
   ScrollTrigger.config({ ignoreMobileResize: true });
-  gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
+  const mm = gsap.matchMedia();
+  mm.add('(prefers-reduced-motion: no-preference)', () => {
     gsap.from('.hero-copy > *', {y:25, opacity:0, duration:.85, stagger:.12, ease:'power3.out', clearProps:'all'});
     gsap.from('.hero-visual', {y:22, opacity:0, duration:1, delay:.15, ease:'power3.out', clearProps:'transform,opacity'});
-    gsap.utils.toArray('.section-heading, .service-grid article, .club-copy, .plan, .about > div, .review-card, .contact').forEach(element => {
-      gsap.from(element, {scrollTrigger:{trigger:element,start:'top 92%',once:true}, y:30, opacity:0,duration:.7,ease:'power2.out',clearProps:'all'});
-    });
-    gsap.to('.photo-tag', {y:-12,rotation:-2,scrollTrigger:{trigger:'.hero',start:'top top',end:'bottom top',scrub:1}});
     gsap.from('.whatsapp-float', {scale:0, opacity:0, duration:.6, delay:.9, ease:'back.out(1.7)', clearProps:'transform'});
     const animateChoice = event => {
       gsap.fromTo(event.currentTarget.closest('label'),{scale:.985},{scale:1,duration:.35,ease:'back.out(1.5)',clearProps:'transform'});
@@ -61,4 +58,122 @@ if (window.gsap && window.ScrollTrigger) {
     planInputs.forEach(input => input.addEventListener('change', animateChoice));
     return () => planInputs.forEach(input => input.removeEventListener('change', animateChoice));
   });
+  // Scroll-linked reveal only on desktop: on mobile Safari the address-bar
+  // resize/inertial scroll makes ScrollTrigger's fire unreliably, leaving
+  // sections (notably the reviews) permanently at opacity:0. Below the
+  // site's own mobile breakpoint (760px) content simply renders visible.
+  mm.add('(prefers-reduced-motion: no-preference) and (min-width: 761px)', () => {
+    gsap.utils.toArray('.section-heading, .service-grid article, .club-copy, .plan, .about > div, .review-card, .contact').forEach(element => {
+      gsap.from(element, {scrollTrigger:{trigger:element,start:'top 92%',once:true}, y:30, opacity:0,duration:.7,ease:'power2.out',clearProps:'all'});
+    });
+    gsap.to('.photo-tag', {y:-12,rotation:-2,scrollTrigger:{trigger:'.hero',start:'top top',end:'bottom top',scrub:1}});
+  });
+}
+
+const reviewCarousel = document.querySelector('.review-carousel');
+const reviewTrack = document.querySelector('.review-track');
+if (reviewCarousel && reviewTrack) {
+  const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let loopWidth = 0;
+  let speed = 0;
+  let position = 0;
+  let dragging = false;
+  let hovering = false;
+  let axisLocked = null;
+  let pointerId = null;
+  let startX = 0;
+  let startY = 0;
+  let startPosition = 0;
+  let lastFrameTime = null;
+  let resumeTimer = null;
+
+  function measure() {
+    loopWidth = reviewTrack.scrollWidth / 2;
+    const durationMs = window.innerWidth <= 760 ? 34000 : 48000;
+    speed = loopWidth / durationMs;
+    applyTransform();
+  }
+
+  function applyTransform() {
+    if (loopWidth > 0) {
+      position = ((position % loopWidth) + loopWidth) % loopWidth;
+    }
+    reviewTrack.style.transform = `translateX(${-position}px)`;
+  }
+
+  function frame(time) {
+    if (lastFrameTime === null) lastFrameTime = time;
+    const dt = time - lastFrameTime;
+    lastFrameTime = time;
+    if (!dragging && !hovering && !reduceMotionQuery.matches) {
+      position += speed * dt;
+      applyTransform();
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function onPointerDown(event) {
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    pointerId = event.pointerId;
+    startX = event.clientX;
+    startY = event.clientY;
+    startPosition = position;
+    axisLocked = null;
+    clearTimeout(resumeTimer);
+    reviewCarousel.addEventListener('pointermove', onPointerMove);
+    reviewCarousel.addEventListener('pointerup', onPointerUp);
+    reviewCarousel.addEventListener('pointercancel', onPointerUp);
+  }
+
+  function onPointerMove(event) {
+    if (event.pointerId !== pointerId) return;
+    const deltaX = event.clientX - startX;
+    const deltaY = event.clientY - startY;
+    if (!axisLocked) {
+      if (Math.abs(deltaX) < 6 && Math.abs(deltaY) < 6) return;
+      axisLocked = Math.abs(deltaX) > Math.abs(deltaY) ? 'x' : 'y';
+      if (axisLocked === 'x') {
+        dragging = true;
+        reviewCarousel.classList.add('is-dragging');
+        try { reviewCarousel.setPointerCapture(pointerId); } catch (error) {}
+      }
+    }
+    if (axisLocked === 'x') {
+      event.preventDefault();
+      position = startPosition - deltaX;
+      applyTransform();
+    }
+  }
+
+  function onPointerUp(event) {
+    if (event.pointerId !== pointerId) return;
+    reviewCarousel.removeEventListener('pointermove', onPointerMove);
+    reviewCarousel.removeEventListener('pointerup', onPointerUp);
+    reviewCarousel.removeEventListener('pointercancel', onPointerUp);
+    const wasDragging = dragging;
+    if (wasDragging) {
+      reviewCarousel.classList.remove('is-dragging');
+      try { reviewCarousel.releasePointerCapture(pointerId); } catch (error) {}
+    }
+    dragging = false;
+    axisLocked = null;
+    pointerId = null;
+    if (wasDragging && event.pointerType !== 'mouse') {
+      hovering = true;
+      resumeTimer = setTimeout(() => { hovering = false; }, 1500);
+    }
+  }
+
+  reviewCarousel.addEventListener('pointerdown', onPointerDown);
+  reviewCarousel.addEventListener('pointerenter', event => {
+    if (event.pointerType === 'mouse') hovering = true;
+  });
+  reviewCarousel.addEventListener('pointerleave', event => {
+    if (event.pointerType === 'mouse') hovering = false;
+  });
+
+  measure();
+  window.addEventListener('resize', measure);
+  window.addEventListener('load', measure);
+  requestAnimationFrame(frame);
 }
