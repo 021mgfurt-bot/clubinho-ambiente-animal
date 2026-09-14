@@ -1,9 +1,8 @@
 const WHATSAPP_NUMBER = '5521992985489';
 const historyLogo = document.querySelector('.history-logo');
-if (historyLogo && historyLogo.tagName === 'VIDEO') {
+if (historyLogo && historyLogo.tagName === 'IMG') {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    historyLogo.removeAttribute('autoplay');
-    historyLogo.pause();
+    historyLogo.src = 'assets/logo-original.png';
   }
 }
 document.querySelectorAll('[data-service]').forEach(link => {
