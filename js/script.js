@@ -72,25 +72,31 @@ if (window.gsap && window.ScrollTrigger) {
 
 const reviewCarousel = document.querySelector('.review-carousel');
 const reviewTrack = document.querySelector('.review-track');
-if (reviewCarousel && reviewTrack) {
+if (reviewCarousel && reviewTrack && reviewTrack.children.length >= 2) {
   const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const cards = reviewTrack.children;
+  const firstClone = cards[Math.floor(cards.length / 2)];
   let loopWidth = 0;
   let speed = 0;
   let position = 0;
   let dragging = false;
+  let dragStartTime = 0;
   let hovering = false;
+  let touchResumeAt = 0;
   let axisLocked = null;
   let pointerId = null;
   let startX = 0;
   let startY = 0;
   let startPosition = 0;
   let lastFrameTime = null;
-  let resumeTimer = null;
 
   function measure() {
-    loopWidth = reviewTrack.scrollWidth / 2;
-    const durationMs = window.innerWidth <= 760 ? 34000 : 48000;
-    speed = loopWidth / durationMs;
+    // Medido pela posição real do primeiro card clonado (não scrollWidth/2,
+    // que fica levemente impreciso por causa do espaçamento entre os cards),
+    // pra garantir que o "ponto de virada" do loop seja exato.
+    loopWidth = firstClone.offsetLeft - cards[0].offsetLeft;
+    const durationMs = window.innerWidth <= 760 ? 68000 : 96000;
+    speed = loopWidth > 0 ? loopWidth / durationMs : 0;
     applyTransform();
   }
 
@@ -103,9 +109,21 @@ if (reviewCarousel && reviewTrack) {
 
   function frame(time) {
     if (lastFrameTime === null) lastFrameTime = time;
-    const dt = time - lastFrameTime;
+    let dt = time - lastFrameTime;
     lastFrameTime = time;
-    if (!dragging && !hovering && !reduceMotionQuery.matches) {
+    // Se a aba ficou em segundo plano por um tempo, ignora o salto em vez
+    // de pular a posição de uma vez (evita um "pulo" visual ao voltar).
+    if (dt > 250) dt = 0;
+    // Segurança: se um toque travar sem soltar (gesto interrompido pelo
+    // sistema), destrava sozinho depois de alguns segundos em vez de
+    // deixar o carrossel parado pra sempre.
+    if (dragging && Date.now() - dragStartTime > 8000) {
+      dragging = false;
+      axisLocked = null;
+      reviewCarousel.classList.remove('is-dragging');
+    }
+    const touchPaused = Date.now() < touchResumeAt;
+    if (!dragging && !hovering && !touchPaused && !reduceMotionQuery.matches) {
       position += speed * dt;
       applyTransform();
     }
@@ -119,10 +137,6 @@ if (reviewCarousel && reviewTrack) {
     startY = event.clientY;
     startPosition = position;
     axisLocked = null;
-    clearTimeout(resumeTimer);
-    reviewCarousel.addEventListener('pointermove', onPointerMove);
-    reviewCarousel.addEventListener('pointerup', onPointerUp);
-    reviewCarousel.addEventListener('pointercancel', onPointerUp);
   }
 
   function onPointerMove(event) {
@@ -134,6 +148,7 @@ if (reviewCarousel && reviewTrack) {
       axisLocked = Math.abs(deltaX) > Math.abs(deltaY) ? 'x' : 'y';
       if (axisLocked === 'x') {
         dragging = true;
+        dragStartTime = Date.now();
         reviewCarousel.classList.add('is-dragging');
         try { reviewCarousel.setPointerCapture(pointerId); } catch (error) {}
       }
@@ -147,9 +162,6 @@ if (reviewCarousel && reviewTrack) {
 
   function onPointerUp(event) {
     if (event.pointerId !== pointerId) return;
-    reviewCarousel.removeEventListener('pointermove', onPointerMove);
-    reviewCarousel.removeEventListener('pointerup', onPointerUp);
-    reviewCarousel.removeEventListener('pointercancel', onPointerUp);
     const wasDragging = dragging;
     if (wasDragging) {
       reviewCarousel.classList.remove('is-dragging');
@@ -159,18 +171,21 @@ if (reviewCarousel && reviewTrack) {
     axisLocked = null;
     pointerId = null;
     if (wasDragging && event.pointerType !== 'mouse') {
-      hovering = true;
-      resumeTimer = setTimeout(() => { hovering = false; }, 1500);
+      touchResumeAt = Date.now() + 1500;
     }
   }
 
   reviewCarousel.addEventListener('pointerdown', onPointerDown);
+  reviewCarousel.addEventListener('pointermove', onPointerMove);
+  reviewCarousel.addEventListener('pointerup', onPointerUp);
+  reviewCarousel.addEventListener('pointercancel', onPointerUp);
   reviewCarousel.addEventListener('pointerenter', event => {
     if (event.pointerType === 'mouse') hovering = true;
   });
   reviewCarousel.addEventListener('pointerleave', event => {
     if (event.pointerType === 'mouse') hovering = false;
   });
+  document.addEventListener('visibilitychange', () => { lastFrameTime = null; });
 
   measure();
   window.addEventListener('resize', measure);
