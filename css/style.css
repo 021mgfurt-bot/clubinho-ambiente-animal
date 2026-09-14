@@ -39,3 +39,5 @@ fieldset{min-inline-size:0}
 }
 @media(max-height:500px) and (orientation:landscape){header{height:66px}.brand .official-logo{width:60px;height:60px}html{scroll-padding-top:74px}}
 @media(min-width:761px) and (max-width:1050px){.round-label{right:-10px}}
+.legal-content{max-width:760px}.legal-content h1{font-size:44px}.legal-content .intro{max-width:none;font-size:14px;margin-bottom:8px}.legal-content h2{font-size:23px;letter-spacing:-.6px;margin:44px 0 12px}.legal-content p,.legal-content li{color:var(--muted);font-size:15px;line-height:1.75}.legal-content ul{padding-left:20px;margin:12px 0}.legal-content li{margin-bottom:8px}.legal-content a{text-decoration:underline;text-underline-offset:3px}.legal-content a:hover{color:var(--purple)}
+.legal-links{margin-top:2px}.legal-links a{text-decoration:underline;text-underline-offset:3px}.legal-links a:hover{color:var(--purple)}
