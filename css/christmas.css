@@ -144,8 +144,7 @@
 .deco-plan-tree{width:24px;height:30px;top:12px;left:12px;transform:rotate(-13deg)}
 footer .footer-tree{width:24px;height:30px;flex-shrink:0;margin-left:12px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.14));transform:rotate(-10deg)}
 .whatsapp-hat{position:absolute;top:-15px;left:50%;width:44px;height:34px;transform:translateX(-50%) rotate(-6deg);transform-origin:50% 85%;pointer-events:none;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}
-@media(max-width:760px){.whatsapp-hat{width:36px;height:28px;top:-12px}}
-@media(max-width:760px){.xmas-deco{display:none}.whatsapp-hat{width:20px;height:16px;top:-8px;left:-5px}}
+@media(max-width:760px){.xmas-deco{display:none}.whatsapp-hat{width:36px;height:28px;top:-12px}}
 
 /* ---------- 6. Toques natalinos nos cards (sem cobrir fotos) ---------- */
 .service-grid article,.review-card{position:relative}
