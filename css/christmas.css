@@ -13,6 +13,12 @@
    style.css foi alterado.
    ============================================================ */
 
+/* sprite oculto com os símbolos (snowflake/bulb/tree/cane/hat) usado via <use>.
+   Precisa ser classe, não style="" inline: o CSP do site (vercel.json,
+   style-src sem unsafe-inline) bloqueia o atributo style em produção e o
+   SVG volta ao tamanho padrão (300x150), empurrando o header pra baixo. */
+.xmas-sprite-defs{position:absolute;width:0;height:0}
+
 /* ---------- 1. Paleta ---------- */
 :root{
   --purple:#174D36;        /* verde pinheiro (era #087b4c) */
